@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
@@ -23,7 +24,7 @@ public final class DemoSafetyFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        String path = request.getServletPath();
+        String path = UrlPathHelper.defaultInstance.getPathWithinApplication(request);
         boolean sensitive = path.startsWith("/modulos/configuracion") || path.startsWith("/mi-cuenta")
             || path.startsWith("/seguridad/") || path.startsWith("/modulos/contexto")
             || path.equals("/modulos/comprobantes");

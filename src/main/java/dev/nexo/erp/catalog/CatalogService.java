@@ -13,28 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CatalogService {
 
-    private static final Set<String> PRODUCT_IMAGES = Set.of(
-        "/images/products/allclean-4-litros-v6.webp",
-        "/images/products/allclean-plus-4-litros-v6.webp",
-        "/images/products/amonium-5-4-litros-v6.webp",
-        "/images/products/booster-alcaline-4-litros-v6.webp",
-        "/images/products/clean-moons-4-litros-v6.webp",
-        "/images/products/clorine-4-litros-v6.webp",
-        "/images/products/desgras-plus-4-litros-v6.webp",
-        "/images/products/flowers-4-litros-v6.webp",
-        "/images/products/fos-cald-4-litros-v6.webp",
-        "/images/products/fos-cald-hk-4-litros-v6.webp",
-        "/images/products/lava-dish-4-litros-v6.webp",
-        "/images/products/natural-soap-4-litros-v6.webp",
-        "/images/products/opticlean-4-litros-v6.webp",
-        "/images/products/silicare-4-litros-v6.webp",
-        "/images/products/stron-bac-4-litros-v6.webp",
-        "/images/products/suavisoft-4-litros-v6.webp",
-        "/images/products/suavitex-4-litros-v6.webp",
-        "/images/products/sumac-brillo-4-litros-v6.webp",
-        "/images/products/sumac-wash-4-litros-v6.webp",
-        "/images/products/white-clor-4-litros-v6.webp"
-    );
+    private static final Set<String> PRODUCT_IMAGES = Set.of("/images/catalog.svg");
 
     private final JdbcClient jdbc;
     private final dev.nexo.erp.commercial.CommercialAccess access;

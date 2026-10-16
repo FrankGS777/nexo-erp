@@ -42,4 +42,12 @@ class DemoSafetyTests {
             assertThat(chain.getRequest()).isSameAs(request);
         }
     }
+    @Test void sensitivePathsAreDecodedBeforePolicyChecks() throws Exception {
+        for(String path:new String[]{"/%6dodulos/configuracion","/modulos/%63onfiguracion","/%6di-cuenta"}) {
+            var request=new MockHttpServletRequest("GET",path);
+            var response=new MockHttpServletResponse();
+            new DemoSafetyFilter(true).doFilter(request,response,new MockFilterChain());
+            assertThat(response.getStatus()).isEqualTo(403);
+        }
+    }
 }
