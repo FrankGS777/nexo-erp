@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: nexo-erp
+  datasource:
+    url: jdbc:h2:mem:nexo;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  thymeleaf:
+    cache: false
+  mvc:
+    problemdetails:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: strict
+        secure: ${NEXO_COOKIE_SECURE:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  demo:
+    read-only: true
+  import-root: ""
+  document-storage: ${java.io.tmpdir}/nexo-demo-documents
+  security:
+    bootstrap-username: viewer
+    bootstrap-password: Explore-demo-2026
+    mfa-master-key: ""
+    persistent-sessions: false

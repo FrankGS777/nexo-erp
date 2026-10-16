@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/page :: head('Nueva cotizacion')}"></head><body class="app-page commercial-page"><div class="app-shell">
+<aside th:replace="~{fragments/navigation :: sidebar('comercial')}"></aside><div class="nav-scrim" data-nav-close></div><section class="app-main"><header th:replace="~{fragments/navigation :: topbar('Nueva cotizacion', ${currentUser})}"></header><main class="workspace">
+<a class="table-link" href="/modulos/comercial">Volver a operaciones</a><div class="page-heading"><div><h1>Nueva cotizacion</h1></div></div><div th:replace="~{fragments/page :: flashes}"></div>
+<form class="work-section commercial-form" method="post" th:action="@{/modulos/comercial}">
+<div class="field full"><label for="customer">Cliente</label><select id="customer" name="customerId" required><option value="">Seleccionar cliente</option><option th:each="c:${customers}" th:if="${c.active}" th:value="${c.id}" th:text="${c.legal_name+' · '+c.document_number}"></option></select></div>
+<div class="field"><label for="requested">Entrega solicitada</label><input id="requested" type="date" name="requestedDate" th:min="${today}"></div>
+<div class="field"><label for="condition">Condicion de pago</label><select id="condition" name="condition"><option value="CONTADO">Contado</option><option value="CREDITO">Credito sujeto a aprobacion</option></select></div>
+<div class="field full"><label for="address">Direccion de entrega</label><input id="address" name="address" maxlength="300"></div>
+<div class="field full"><label for="notes">Observaciones</label><textarea id="notes" name="notes" maxlength="1000" rows="3"></textarea></div>
+<div class="full form-actions"><a class="button button--secondary" href="/modulos/comercial">Cancelar</a><button class="button button--primary">Crear y elegir productos</button></div>
+</form></main></section></div><script src="/js/app.js" defer></script></body></html>

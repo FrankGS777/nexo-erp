@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"><body>
+<aside class="sidebar" id="primary-navigation" th:fragment="sidebar(activeModule)">
+ <div class="sidebar__brand"><img src="/images/nexo-logo.svg" alt="Nexo" width="174" height="66"><button class="icon-button sidebar__close" type="button" data-nav-close aria-label="Cerrar navegación">×</button></div>
+ <nav class="sidebar__nav" aria-label="Navegación principal">
+  <p class="nav-label">Resumen</p>
+  <a class="nav-item" sec:authorize="hasAuthority('DASHBOARD_VIEW')" th:classappend="${activeModule == 'inicio'} ? ' nav-item--active'" href="/"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-9Z"/><path d="M9 21v-7h6v7"/></svg><span>Inicio</span></a>
+
+  <p class="nav-label" sec:authorize="hasAuthority('QUOTE_MANAGE')">Comercial</p>
+  <a class="nav-item" sec:authorize="hasAuthority('QUOTE_MANAGE')" th:classappend="${activeModule=='comercial'}?' nav-item--active'" href="/modulos/comercial"><span>Cotizaciones y pedidos</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('QUOTE_MANAGE')" th:classappend="${activeModule=='tarifas'}?' nav-item--active'" href="/modulos/comercial/tarifas"><span>Tarifas por cliente</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('PRICE_APPROVE')" th:classappend="${activeModule=='cartera'}?' nav-item--active'" href="/modulos/comercial/gestion"><span>Cartera y credito</span></a>
+
+  <p class="nav-label" sec:authorize="hasAuthority('DOCUMENT_VIEW')">Facturación</p>
+  <a class="nav-item" sec:authorize="hasAuthority('DOCUMENT_VIEW')" th:classappend="${activeModule == 'emitidos'} ? ' nav-item--active'" href="/modulos/comprobantes/emitidos"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6zM14 2v5h5M9 12h7M9 16h5"/><path d="m15.5 17.5 2 2 3.5-4"/></svg><span>Documentos emitidos</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('DOCUMENT_VIEW')" th:classappend="${activeModule == 'recibidos'} ? ' nav-item--active'" href="/modulos/comprobantes/recibidos"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6zM14 2v5h5"/><path d="M12 10v7m0 0-3-3m3 3 3-3"/></svg><span>Documentos recibidos</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('DOCUMENT_VIEW')" th:classappend="${activeModule == 'archivo'} ? ' nav-item--active'" href="/modulos/comprobantes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16v5H4zM6 9v11h12V9M9 13h6"/></svg><span>Archivo XML</span></a>
+
+  <p class="nav-label">Operaciones</p>
+  <a class="nav-item" sec:authorize="hasAuthority('SALES_MANAGE')" th:classappend="${activeModule == 'ventas'} ? ' nav-item--active'" href="/modulos/ventas"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>Ventas</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('SALES_MANAGE')" href="/modulos/ventas/nueva"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Emitir comprobante</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('PURCHASE_MANAGE')" th:classappend="${activeModule == 'compras'} ? ' nav-item--active'" href="/modulos/compras"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H7M10 21h.01M18 21h.01"/></svg><span>Compras</span></a>
+
+  <p class="nav-label">Almacén</p>
+  <a class="nav-item" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'almacen'} ? ' nav-item--active'" href="/modulos/inventario"><svg class="nav-icon" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4-9 4-9-4ZM3 12l9 4 9-4M3 17l9 4 9-4"/></svg><span>Resumen de almacén</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'existencias'} ? ' nav-item--active'" href="/modulos/inventario/existencias"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 7h16v13H4zM7 4h10v3M8 12h8"/></svg><span>Existencias</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'lotes'} ? ' nav-item--active'" href="/modulos/inventario/lotes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 5h16v5H4zM4 14h16v5H4zM8 10v4M16 10v4"/></svg><span>Lotes y vencimientos</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'kardex'} ? ' nav-item--active'" href="/modulos/inventario/kardex"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7"/></svg><span>Kardex</span></a>
+  <a class="nav-item nav-item--nested" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'ajustes'} ? ' nav-item--active'" href="/modulos/inventario/ajustes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>Ajustes</span></a>
+
+  <p class="nav-label">Maestros</p>
+  <a class="nav-item" sec:authorize="hasAuthority('INVENTORY_MANAGE')" th:classappend="${activeModule == 'productos'} ? ' nav-item--active'" href="/modulos/inventario/productos"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6M4 9h16M16 16h6M19 13v6"/></svg><span>Productos</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('CUSTOMER_MANAGE')" th:classappend="${activeModule == 'clientes'} ? ' nav-item--active'" href="/modulos/clientes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Clientes</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('PURCHASE_MANAGE')" th:classappend="${activeModule == 'proveedores'} ? ' nav-item--active'" href="/modulos/proveedores"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14M8 21v-5h8v5M8 9h.01M12 9h.01M16 9h.01M8 13h.01M12 13h.01M16 13h.01"/></svg><span>Proveedores</span></a>
+
+  <p class="nav-label">Gestión</p>
+  <a class="nav-item" sec:authorize="hasAuthority('REPORT_VIEW')" th:classappend="${activeModule == 'reportes'} ? ' nav-item--active'" href="/modulos/reportes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Reportes</span></a>
+  <a class="nav-item" sec:authorize="hasAuthority('SECURITY_ADMIN')" th:classappend="${activeModule == 'configuracion'} ? ' nav-item--active'" href="/modulos/configuracion"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 15l2 2-4 4-2-2M9 4 7 2 3 6l2 2M4 14H2v5h5v-2M14 4V2h5v5h-2"/></svg><span>Administración</span></a>
+ </nav>
+ <div class="sidebar__company"><span class="company-monogram">NC</span><div><strong>Nexo ERP</strong><small>Gestión empresarial</small></div></div>
+</aside>
+<header class="topbar" th:fragment="topbar(title, currentUser)"><button class="icon-button topbar__menu" type="button" data-nav-open aria-controls="primary-navigation" aria-expanded="false" aria-label="Abrir navegación">☰</button><div class="topbar__title"><span>Nexo</span><strong th:text="${title}">Inicio</strong></div><div class="topbar__actions"><span th:if="${localEnvironment}" class="test-environment">Entorno de pruebas</span><button class="privacy-toggle" type="button" data-privacy-toggle aria-pressed="true" title="Mostrar datos protegidos"><img class="nc-icon" src="/icons/eye-off.svg" alt=""><span>Datos ocultos</span></button><details class="user-menu"><summary><span class="avatar" th:text="${#strings.substring(currentUser, 0, 1).toUpperCase()}">A</span><span class="user-menu__name" data-private th:text="${currentUser}">administrador</span></summary><div class="user-menu__panel"><p><strong data-private th:text="${currentUser}">administrador</strong></p><a class="user-menu__link" href="/mi-cuenta">Mi cuenta</a><form method="post" action="/logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Cerrar sesión</button></form></div></details></div></header>
+</body></html>

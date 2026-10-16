@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/page :: head('Cotizaciones y pedidos')}"></head>
+<body class="app-page commercial-page"><div class="app-shell">
+<aside th:replace="~{fragments/navigation :: sidebar('comercial')}"></aside><div class="nav-scrim" data-nav-close></div>
+<section class="app-main"><header th:replace="~{fragments/navigation :: topbar('Operacion comercial', ${currentUser})}"></header><main class="workspace">
+<div class="page-heading"><div><p class="eyebrow eyebrow--green">Nexo ERP</p><h1>Cotizaciones y pedidos</h1></div><a class="button button--primary" href="/modulos/comercial/nueva">Nueva cotizacion</a></div>
+<div th:replace="~{fragments/page :: flashes}"></div>
+<nav class="commercial-tabs"><a class="active" href="/modulos/comercial">Operaciones</a><a href="/modulos/comercial/tarifas">Tarifas por cliente</a><a th:if="${canApprove}" href="/modulos/comercial/gestion">Cartera y credito</a></nav>
+<div class="commercial-metrics"><div><span>Operaciones</span><strong th:text="${#lists.size(orders)}">0</strong></div><div><span>En cotizacion</span><strong th:text="${draftCount}">0</strong></div><div><span>Por atender</span><strong th:text="${pendingCount}">0</strong></div></div>
+<section class="work-section"><form class="commercial-filter" method="get"><input type="search" name="q" th:value="${query}" placeholder="RUC, cliente o cotizacion" aria-label="RUC, cliente o cotizacion"><select name="estado" aria-label="Estado"><option value="">Todos los estados</option><option th:each="s:${statusLabels}" th:value="${s.key}" th:text="${s.value}" th:selected="${selectedStatus==s.key}"></option></select><button class="button button--secondary">Buscar</button></form>
+<div class="responsive-table"><table><thead><tr><th>Operacion</th><th>Cliente</th><th>Responsable</th><th>Estado</th><th>Entrega solicitada</th><th class="align-right">Total con IGV</th><th></th></tr></thead><tbody>
+<tr th:each="o:${orders}"><td><a class="table-link" th:href="@{/modulos/comercial/{id}(id=${o.id})}" th:text="${o.reference}"></a><small th:text="${o.payment_condition}"></small></td><td><strong th:text="${o.legal_name}"></strong><small th:text="${o.document_number}"></small></td><td th:text="${o.seller_name}"></td><td><span class="document-state" th:text="${statusLabels[o.status]}"></span><small class="price-warning" th:if="${o.unapproved>0}">Precio por aprobar</small></td><td th:text="${o.requested_date ?: 'Por coordinar'}"></td><td class="align-right amount" th:text="${'S/ '+#numbers.formatDecimal(o.total,1,'COMMA',2,'POINT')}"></td><td><a class="table-link" th:href="@{/modulos/comercial/{id}(id=${o.id})}">Abrir</a></td></tr>
+<tr th:if="${#lists.isEmpty(orders)}"><td colspan="7" class="empty-results">No hay operaciones en esta vista.</td></tr>
+</tbody></table></div></section></main></section></div><script src="/js/app.js" defer></script></body></html>

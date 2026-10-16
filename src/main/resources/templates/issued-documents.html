@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/page :: head('Documentos emitidos')}"></head>
+<body class="app-page"><div class="app-shell">
+  <aside th:replace="~{fragments/navigation :: sidebar('emitidos')}"></aside>
+  <div class="nav-scrim" data-nav-close></div>
+  <section class="app-main">
+    <header th:replace="~{fragments/navigation :: topbar('Documentos emitidos', ${currentUser})}"></header>
+    <main class="workspace">
+      <section class="page-heading fiscal-page-heading">
+        <div><span class="page-kicker">Facturación electrónica</span><h1>Documentos emitidos</h1>
+          </div>
+        <a class="button button--primary" sec:authorize="hasAuthority('SALES_MANAGE')" href="/modulos/ventas/nueva">Nueva venta</a>
+      </section>
+      <div th:replace="~{fragments/page :: flashes}"></div>
+      <section class="panel data-panel spaced-panel">
+        <div class="list-toolbar"><label class="catalog-search received-search"><span aria-hidden="true">⌕</span><input type="search" data-table-search placeholder="Buscar por serie, cliente o estado"></label><span class="record-count"><b th:text="${#lists.size(issuedDocuments)}">0</b> documentos recientes</span></div>
+        <div class="responsive-table"><table data-searchable-table><thead><tr><th>Comprobante</th><th>Cliente</th><th class="align-right">Total</th><th>Situación</th><th>Registro</th><th></th></tr></thead><tbody>
+          <tr th:each="d : ${issuedDocuments}">
+            <td><strong th:text="${d.label}"></strong><small th:text="${d.type == '01' ? 'Factura' : (d.type == '03' ? 'Boleta' : (d.type == '07' ? 'Nota de crédito' : 'Nota de débito'))}"></small></td>
+            <td th:text="${d.customerName}"></td>
+            <td class="align-right amount" th:text="${'S/ ' + #numbers.formatDecimal(d.total,1,'COMMA',2,'POINT')}"></td>
+            <td><span class="document-state" th:classappend="${d.status == 'ACCEPTED'} ? ' document-state--ok' : (${d.status == 'OBSERVED' || d.status == 'SUBMISSION_UNKNOWN' || d.status == 'REJECTED' || d.status == 'CDR_RECORDED_UNVERIFIED'} ? ' document-state--warn' : ' document-state--muted')"
+                      th:text="${d.status == 'ACCEPTED' ? 'Aceptado' : d.status == 'OBSERVED' ? 'Observado' : d.status == 'REJECTED' ? 'Rechazado' : d.status == 'GENERATED_UNSIGNED' ? 'XML listo' : d.status == 'PENDING_GENERATION' ? 'Por generar' : d.status == 'PROCESSING' ? 'En proceso' : d.status == 'SUBMISSION_UNKNOWN' ? 'Por conciliar' : d.status == 'CDR_RECORDED_UNVERIFIED' ? 'CDR sin verificar' : @uiLabels.status(d.status)}"></span></td>
+            <td><small th:text="${#temporals.format(d.createdAt,'dd/MM/yyyy')}"></small></td>
+            <td><a class="table-button" th:href="@{/modulos/comprobantes/emitidos/{id}(id=${d.id})}">Abrir expediente</a></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(issuedDocuments)}"><td colspan="6" class="empty-results">Aún no hay comprobantes. Registra una venta para comenzar.</td></tr>
+        </tbody></table></div>
+      </section>
+    </main>
+  </section>
+</div><script src="/js/app.js" defer></script></body></html>

@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Vincular autenticador - Nexo</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/css/app.css"><link rel="stylesheet" href="/css/workspace.css"></head>
+<body class="login-page"><main class="login-shell"><section class="login-panel" aria-labelledby="mfa-link-title"><div class="login-form-wrap mfa-wrap"><div class="mobile-logo"><img src="/images/nexo-logo.svg" alt="Nexo" width="206" height="78"></div><h2 id="mfa-link-title">Vincular autenticador</h2><p class="login-intro" th:text="${username}"></p><div class="mfa-setup"><img class="mfa-qr" th:src="${mfaQr}" width="288" height="288" alt="QR privado para vincular tu cuenta al autenticador"><p class="login-intro">Escanea con tu app autenticadora. Este QR permite generar tus codigos: no lo compartas.</p></div><a href="/mi-cuenta" class="button button--primary button--block">Cerrar QR</a></div></section></main></body>
+</html>

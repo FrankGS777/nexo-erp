@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Revisión documental de Nexo">
+    <title>Comprobantes · Nexo</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/workspace.css"><script src="/js/workspace.js" defer></script></head>
+<body class="app-page">
+<div class="app-shell">
+    <aside th:replace="~{fragments/navigation :: sidebar('archivo')}"></aside>
+    <div class="nav-scrim" data-nav-close></div>
+    <section class="app-main">
+        <header th:replace="~{fragments/navigation :: topbar('Comprobantes', ${currentUser})}"></header>
+
+        <main class="workspace documents-workspace">
+            <section class="documents-heading" aria-labelledby="page-title">
+                <div>
+                    <p class="eyebrow eyebrow--green">Archivo fiscal histórico</p>
+                    <h1 id="page-title">Comprobantes</h1>
+                    <p>Inspección segura y de solo lectura de los XML recuperados.</p>
+                </div>
+                <div class="heading-actions">
+                    <div class="read-only-badge"><span aria-hidden="true">◈</span> Originales protegidos</div>
+                    <a class="button button--primary" href="/modulos/comprobantes/emitidos">Ver emisión actual</a>
+                </div>
+            </section>
+
+            <section class="compact-metrics" aria-label="Estado de los comprobantes">
+                <article><span>Total recuperado</span><strong th:text="${totalCount}">795</strong></article>
+                <article><span>Estructura legible</span><strong class="text-green" th:text="${readableCount}">794</strong></article>
+                <article><span>Requieren revisión</span><strong class="text-amber" th:text="${incidentCount}">1</strong></article>
+            </section>
+
+            <section class="panel document-panel">
+                <form class="document-filters" method="get" action="/modulos/comprobantes">
+                    <label class="search-field">
+                        <span class="visually-hidden">Buscar comprobante</span>
+                        <span aria-hidden="true">⌕</span>
+                        <input type="search" name="q" th:value="${query}" placeholder="Buscar por número, RUC o cliente">
+                    </label>
+                    <label>
+                        <span class="visually-hidden">Tipo de documento</span>
+                        <select name="type">
+                            <option value="" th:selected="${selectedType == ''}">Todos los tipos</option>
+                            <option value="factura" th:selected="${selectedType == 'factura'}">Facturas</option>
+                            <option value="nota" th:selected="${selectedType == 'nota'}">Notas de crédito</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span class="visually-hidden">Estado de validación</span>
+                        <select name="state">
+                            <option value="" th:selected="${selectedState == ''}">Todos los estados</option>
+                            <option value="readable" th:selected="${selectedState == 'readable'}">Legibles</option>
+                            <option value="empty" th:selected="${selectedState == 'empty'}">Vacíos</option>
+                            <option value="invalid" th:selected="${selectedState == 'invalid'}">No interpretables</option>
+                        </select>
+                    </label>
+                    <button class="button button--primary" type="submit">Aplicar filtros</button>
+                </form>
+
+                <div class="table-meta">
+                    <p><strong th:text="${filteredCount}">795</strong> resultados</p>
+                    <p>Lectura UBL 2.1 · huella SHA-256</p>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="document-table">
+                        <thead>
+                        <tr>
+                            <th>Comprobante</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th class="align-right">Total</th>
+                            <th>Validación</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="document : ${documents}">
+                            <td>
+                                <strong th:text="${document.documentNumber}">E001-100</strong>
+                                <small th:text="${document.documentType}">Factura</small>
+                            </td>
+                            <td th:text="${document.issueDate != null ? #temporals.format(document.issueDate, 'dd/MM/yyyy') : '—'}">19/09/2023</td>
+                            <td>
+                                <strong th:text="${document.customerName}">Cliente</strong>
+                                <small th:text="${document.customerDocument}">RUC</small>
+                            </td>
+                            <td class="align-right amount" th:text="${document.total != null ? document.currency + ' ' + #numbers.formatDecimal(document.total, 1, 'COMMA', 2, 'POINT') : '—'}">PEN 0.00</td>
+                            <td>
+                                <span class="document-state document-state--ok" th:if="${document.validationState.name() == 'READABLE'}">Legible</span>
+                                <span class="document-state document-state--warn" th:unless="${document.validationState.name() == 'READABLE'}" th:text="${document.validationState.name() == 'EMPTY' ? 'Vacío' : 'Revisar'}">Revisar</span>
+                                <small class="hash" th:if="${document.sha256 != '—'}" th:text="${'SHA ' + #strings.substring(document.sha256, 0, 10)}">SHA 0000000000</small>
+                                <small class="hash" th:unless="${document.sha256 != '—'}" th:text="${document.observation}">Incidencia</small>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(documents)}">
+                            <td colspan="5" class="empty-results">No hay comprobantes que coincidan con estos filtros.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav class="pagination" aria-label="Páginas de comprobantes">
+                    <a class="button button--secondary" th:classappend="${!hasPrevious} ? 'is-disabled'" th:aria-disabled="${!hasPrevious}" th:href="${hasPrevious} ? @{/modulos/comprobantes(q=${query},type=${selectedType},state=${selectedState},page=${page - 1})} : '#'">← Anterior</a>
+                    <span th:text="${'Página ' + (page + 1)}">Página 1</span>
+                    <a class="button button--secondary" th:classappend="${!hasNext} ? 'is-disabled'" th:aria-disabled="${!hasNext}" th:href="${hasNext} ? @{/modulos/comprobantes(q=${query},type=${selectedType},state=${selectedState},page=${page + 1})} : '#'">Siguiente →</a>
+                </nav>
+            </section>
+        </main>
+    </section>
+</div>
+<script src="/js/app.js" defer></script>
+</body>
+</html>

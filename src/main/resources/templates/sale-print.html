@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/page :: head('Representación impresa')}"></head>
+<body class="print-page" th:with="h=${sale.header}">
+<main class="print-sheet">
+  <header class="print-header">
+    <img src="/images/nexo-logo.svg" alt="Nexo">
+    <div class="print-company">
+      <strong>NEXO DEMO S.A.C.</strong>
+      <span>RUC 00000000000</span>
+      <span>A.H. Valle Verde Mza. E Lote 30, Ventanilla, Callao</span>
+      <span>example.invalid</span>
+    </div>
+    <div class="print-document">
+      <strong th:text="${h.documentType == '01' ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA'}"></strong>
+      <b th:text="${h.label}"></b>
+    </div>
+  </header>
+
+  <section class="print-customer">
+    <div><span>Señor(es)</span><strong th:text="${h.customerName}"></strong></div>
+    <div><span>Documento</span><strong th:text="${h.customerDocument}"></strong></div>
+    <div><span>Fecha de emisión</span><strong th:text="${#temporals.format(h.issueDate,'dd/MM/yyyy')}"></strong></div>
+    <div><span>Dirección</span><strong th:text="${h.customerAddress ?: '—'}"></strong></div>
+  </section>
+
+  <table class="print-table">
+    <thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Valor unitario</th><th>Importe</th></tr></thead>
+    <tbody>
+      <tr th:each="l : ${sale.lines}">
+        <td th:text="${l.sku}"></td>
+        <td th:text="${l.description}"></td>
+        <td th:text="${l.quantity.stripTrailingZeros().toPlainString()}"></td>
+        <td th:text="${'S/ ' + #numbers.formatDecimal(l.unitValue,1,'COMMA',2,'POINT')}"></td>
+        <td th:text="${'S/ ' + #numbers.formatDecimal(l.lineTotal,1,'COMMA',2,'POINT')}"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <section class="print-totals">
+    <p><span>Op. gravada</span><strong th:text="${'S/ ' + #numbers.formatDecimal(h.subtotal,1,'COMMA',2,'POINT')}"></strong></p>
+    <p><span>IGV 18%</span><strong th:text="${'S/ ' + #numbers.formatDecimal(h.taxAmount,1,'COMMA',2,'POINT')}"></strong></p>
+    <p class="print-grand-total"><span>Total</span><strong th:text="${'S/ ' + #numbers.formatDecimal(h.total,1,'COMMA',2,'POINT')}"></strong></p>
+  </section>
+
+  <footer class="print-footer">
+    <p>Representación impresa del comprobante electrónico. La validez fiscal depende de la respuesta registrada por SUNAT/PSE.</p>
+    <p th:if="${h.xmlSha256 != null}" th:text="${'Huella SHA-256 del XML: ' + h.xmlSha256}"></p>
+  </footer>
+</main>
+<div class="print-toolbar">
+  <button class="button button--primary" type="button" data-print>Imprimir o guardar PDF</button>
+</div>
+<script src="/js/document-print.js" defer></script>
+</body>
+</html>

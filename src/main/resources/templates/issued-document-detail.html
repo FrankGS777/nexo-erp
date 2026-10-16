@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/page :: head('Expediente fiscal')}"></head>
+<body class="app-page"><div class="app-shell">
+  <aside th:replace="~{fragments/navigation :: sidebar('emitidos')}"></aside>
+  <div class="nav-scrim" data-nav-close></div>
+  <section class="app-main">
+    <header th:replace="~{fragments/navigation :: topbar('Expediente fiscal', ${currentUser})}"></header>
+    <main class="workspace fiscal-detail-workspace">
+      <a class="back-link" href="/modulos/comprobantes/emitidos">← Documentos emitidos</a>
+      <section class="page-heading fiscal-page-heading">
+        <div><span class="page-kicker" th:text="${document.type == '01' ? 'Factura electrónica' : document.type == '03' ? 'Boleta electrónica' : document.type == '07' ? 'Nota de crédito' : 'Nota de débito'}"></span>
+          <h1 th:text="${document.label}"></h1><p th:text="${document.customerName}"></p></div>
+        <span class="document-state fiscal-status" th:classappend="${document.status == 'ACCEPTED'} ? ' document-state--ok' : (${document.status == 'OBSERVED' || document.status == 'REJECTED' || document.status == 'SUBMISSION_UNKNOWN' || document.status == 'CDR_RECORDED_UNVERIFIED'} ? ' document-state--warn' : ' document-state--muted')"
+              th:text="${profileBlocked ? 'Acceso de envío bloqueado' : document.status == 'ACCEPTED' ? 'Aceptado por SUNAT' : document.status == 'OBSERVED' ? 'Aceptado con observaciones' : document.status == 'REJECTED' ? 'Rechazado' : document.status == 'GENERATED_UNSIGNED' ? 'XML listo para enviar' : document.status == 'PENDING_GENERATION' ? 'Pendiente de generar' : document.status == 'PROCESSING' ? 'En proceso' : document.status == 'SUBMISSION_UNKNOWN' ? 'Envío por conciliar' : document.status == 'CDR_RECORDED_UNVERIFIED' ? 'CDR sin verificar' : @uiLabels.status(document.status)}"></span>
+      </section>
+      <div th:replace="~{fragments/page :: flashes}"></div>
+      <section class="fiscal-path" aria-label="Estado del proceso de emisión">
+        <div class="fiscal-path--done"><span>01</span><strong>Registrado</strong><small th:text="${#temporals.format(document.createdAt,'dd/MM/yyyy HH:mm','America/Lima')}"></small></div>
+        <div th:classappend="${document.sha256 != null} ? ' fiscal-path--done' : ''"><span>02</span><strong>XML generado</strong><small th:text="${document.sha256 != null ? 'Huella digital conservada' : 'Pendiente'}"></small></div>
+        <div th:classappend="${document.sentAt != null && !profileBlocked} ? ' fiscal-path--done' : ''"><span>03</span><strong th:text="${profileBlocked ? 'Envío bloqueado' : 'Enviado'}"></strong><small th:text="${profileBlocked ? 'Acceso no autorizado por SUNAT' : document.sentAt != null ? #temporals.format(document.sentAt,'dd/MM/yyyy HH:mm','America/Lima') : 'Pendiente'}"></small></div>
+        <div th:classappend="${document.cdrSha256 != null} ? ' fiscal-path--done' : ''"><span>04</span><strong>Respuesta</strong><small th:text="${document.cdrSha256 != null ? 'Constancia archivada' : document.errorCode != null ? 'Sin CDR: revisar respuesta' : 'Pendiente'}"></small></div>
+      </section>
+      <section class="fiscal-detail-grid">
+        <div class="fiscal-detail-main">
+          <section class="panel fiscal-task-panel"><div class="panel-heading"><div><span class="page-kicker">Siguiente paso</span><h2>Gestionar comprobante</h2></div></div>
+            <div class="fiscal-task-body">
+              <p class="notice" th:classappend="${fiscalMode=='PRODUCTION'?'notice--warning':''}" th:text="${fiscalMode=='PRODUCTION'?'Entorno de emision: PRODUCCION':'Entorno de emision: PRUEBAS, sin validez tributaria'}"></p>
+              <p class="fiscal-guidance" th:if="${document.status == 'SUBMISSION_UNKNOWN' || document.status == 'SUBMITTING' || document.status == 'PROCESSING'}">El resultado del envío necesita confirmación. Consulta SUNAT antes de intentar otra operación.</p>
+              <p class="fiscal-guidance" th:if="${document.status == 'ACCEPTED' || document.status == 'OBSERVED'}">La respuesta fiscal está registrada. Puedes descargar el XML y la constancia para tu archivo.</p>
+              <p class="fiscal-guidance" th:if="${document.status == 'CDR_RECORDED_UNVERIFIED'}">Se archivó un CDR cargado manualmente. Su autenticidad no se ha confirmado mediante la conexión con SUNAT.</p>
+              <p class="notice notice--warning" th:if="${document.errorMessage != null}" th:text="${document.errorMessage}"></p>
+              <p class="notice notice--warning" th:if="${profileBlocked}">Revisa en SOL: Comprobantes de pago → SEE - Del Contribuyente y Envío de Documentos → Servicio de Envío de Documentos Electrónicos. Si el usuario configurado ya tiene los permisos guardados, solicita a SUNAT revisar su autorización. Conserva este comprobante.</p>
+              <div class="notice notice--warning" th:if="${!#lists.isEmpty(cdrObservations)}"><strong>Observaciones del CDR</strong><ul><li th:each="observation : ${cdrObservations}" th:text="${observation}"></li></ul></div>
+              <div class="fiscal-primary-actions">
+                <form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:if="${profileBlocked}" th:action="@{/modulos/comprobantes/emitidos/{id}/emitir(id=${document.id})}" data-confirm="Confirma que la autorización de envío fue revisada. Se enviará esta misma factura, con el mismo número e importe, al entorno configurado."><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--primary">Reintentar envío</button></form>
+                <form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:if="${!profileBlocked && (document.status == 'PENDING_GENERATION' || document.status == 'GENERATED_UNSIGNED')}" th:action="@{/modulos/comprobantes/emitidos/{id}/emitir(id=${document.id})}" data-confirm="Se generara el XML, se firmara y se enviara al entorno SUNAT configurado. Confirma que cliente, cantidades, precios y condiciones son correctos."><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--primary" th:text="${document.type=='01'?'Emitir factura':'Emitir comprobante'}"></button></form>
+                <form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:if="${document.status == 'SUBMITTING' || document.status == 'SUBMISSION_UNKNOWN' || document.status == 'PROCESSING' || document.status == 'CDR_RECORDED_UNVERIFIED'}" th:action="@{/modulos/comprobantes/emitidos/{id}/conciliar(id=${document.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--primary">Consultar estado en SUNAT</button></form>
+                <a class="button button--secondary" th:href="@{/modulos/comprobantes/emitidos/{id}/imprimir(id=${document.id})}" target="_blank" rel="noopener">PDF para el cliente</a>
+                <a class="button button--secondary" th:if="${document.sha256 != null}" th:href="@{/modulos/comprobantes/emitidos/{id}/xml(id=${document.id})}">Descargar XML</a>
+                <a class="button button--secondary" th:if="${document.cdrSha256 != null}" th:href="@{/modulos/comprobantes/emitidos/{id}/cdr(id=${document.id})}">Descargar CDR</a>
+              </div>
+            </div>
+          </section>
+          <section class="panel fiscal-task-panel" th:if="${!#lists.isEmpty(fiscalActions)}"><div class="panel-heading"><div><span class="page-kicker">Seguimiento</span><h2>Comunicaciones de baja</h2></div></div>
+            <div class="fiscal-action-list"><article th:each="action : ${fiscalActions}"><div><strong th:text="${action.reason}"></strong><small th:text="${action.status + (action.ticket != null ? ' · Ticket ' + action.ticket : '')}"></small></div>
+              <form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:if="${action.status == 'PENDING'}" th:action="@{/modulos/comprobantes/acciones/{id}/enviar(id=${action.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--secondary button--small">Enviar baja</button></form>
+              <form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:if="${(action.status == 'PROCESSING' || action.status == 'SUBMISSION_UNKNOWN') && action.ticket != null}" th:action="@{/modulos/comprobantes/acciones/{id}/consultar(id=${action.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--secondary button--small">Consultar ticket</button></form>
+            </article></div>
+          </section>
+          <section class="panel fiscal-task-panel"><div class="panel-heading"><div><span class="page-kicker">Trazabilidad</span><h2>Historial de estados</h2></div></div>
+            <ol class="fiscal-events"><li th:each="event : ${events}"><span class="fiscal-event-dot"></span><div><strong th:text="${@uiLabels.status(event.newStatus)}"></strong><p th:text="${event.message}"></p><small th:text="${#temporals.format(event.occurredAt,'dd/MM/yyyy HH:mm','America/Lima') + (event.actorName != null ? ' · ' + event.actorName : '')}"></small></div></li>
+              <li th:if="${#lists.isEmpty(events)}"><div><p>Aún no hay eventos adicionales.</p></div></li></ol>
+          </section>
+        </div>
+        <aside class="fiscal-detail-aside">
+          <section class="panel fiscal-info-panel"><span class="page-kicker">Resumen</span><h2>Datos del documento</h2>
+            <dl><div><dt>Tipo</dt><dd th:text="${document.type == '01' ? 'Factura' : document.type == '03' ? 'Boleta' : document.type == '07' ? 'Nota de crédito' : 'Nota de débito'}"></dd></div><div><dt>Cliente</dt><dd th:text="${document.customerName}"></dd></div><div><dt>Total</dt><dd th:text="${'S/ ' + #numbers.formatDecimal(document.total,1,'COMMA',2,'POINT')}"></dd></div><div><dt>Huella XML</dt><dd class="fiscal-hash" th:text="${document.sha256 != null ? document.sha256 : 'Aún no generado'}"></dd></div><div><dt>Huella CDR</dt><dd class="fiscal-hash" th:text="${document.cdrSha256 != null ? document.cdrSha256 : 'Pendiente'}"></dd></div></dl>
+          </section>
+          <section class="panel fiscal-info-panel"><span class="page-kicker">Excepciones</span><h2>Acciones adicionales</h2>
+            <details class="fiscal-extra" th:if="${document.status == 'PENDING_GENERATION' || document.status == 'GENERATED_UNSIGNED'}"><summary>Preparacion tecnica sin envio</summary><form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:action="@{/modulos/comprobantes/emitidos/{id}/generar(id=${document.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button button--secondary button--small" th:text="${document.sha256==null?'Generar XML':'Regenerar XML'}"></button></form></details>
+            <details class="fiscal-extra" th:if="${document.cdrSha256 == null && (document.status == 'GENERATED_UNSIGNED' || document.status == 'REJECTED')}"><summary>Conservar un CDR manual</summary><p>El archivo se guarda como evidencia sin marcar el documento como aceptado.</p><form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" enctype="multipart/form-data" th:action="@{/modulos/comprobantes/emitidos/{id}/cdr(id=${document.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>Archivo XML o ZIP<input type="file" name="file" accept=".xml,.zip,application/xml,application/zip" required></label><button class="button button--secondary button--small">Archivar CDR</button></form></details>
+            <details class="fiscal-extra" th:if="${document.status != 'CANCELLED' && document.status != 'CANCELLED_LOCAL' && document.status != 'VOID_REQUESTED'}"><summary>Solicitar anulación</summary><p>Registra el motivo. Si SUNAT aceptó el documento, la baja requiere un envío fiscal adicional.</p><form sec:authorize="hasAuthority('DOCUMENT_ISSUE')" method="post" th:action="@{/modulos/comprobantes/emitidos/{id}/anular(id=${document.id})}"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>Motivo<textarea name="reason" minlength="5" maxlength="500" required></textarea></label><button class="button button--secondary button--small">Registrar solicitud</button></form></details>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </section>
+</div><script src="/js/app.js" defer></script></body></html>

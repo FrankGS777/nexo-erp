@@ -1,0 +1,16 @@
+<!doctype html><html lang="es" xmlns:th="http://www.thymeleaf.org"><body>
+<dialog class="catalog-dialog" data-product-picker th:fragment="picker(products, title)">
+ <div class="catalog-dialog__shell">
+  <header class="catalog-dialog__header"><div><span class="page-kicker">Catálogo Nexo</span><h2 th:text="${title}">Seleccionar producto</h2></div><button type="button" class="dialog-close" data-product-picker-close aria-label="Cerrar">×</button></header>
+  <div class="catalog-dialog__tools"><label class="catalog-search"><span aria-hidden="true">⌕</span><input type="search" data-product-search placeholder="Buscar por nombre, código o área" autocomplete="off"></label><div class="category-filters" data-category-filters><button type="button" class="is-active" data-category="">Todos</button></div></div>
+  <div class="catalog-results" data-product-results>
+   <button type="button" class="catalog-product" th:each="product : ${products}" data-product-option th:disabled="${!product.active}" th:classappend="${!product.active} ? ' catalog-product--disabled'" th:attr="data-unit=${product.unitCode},data-barcode=${product.barcode ?: ''},data-id=${product.id},data-name=${product.name},data-sku=${product.sku},data-category=${product.category ?: 'Sin clasificar'},data-price=${product.salePrice},data-cost=${product.purchasePrice},data-stock=${product.stock},data-image=${product.imagePath ?: ''}">
+    <span class="catalog-product__image"><img th:if="${product.imagePath}" th:src="${product.imagePath}" alt="" loading="lazy"><span th:unless="${product.imagePath}">NC</span></span>
+    <span class="catalog-product__body"><strong th:text="${product.name}">Producto</strong><small th:text="${product.sku + ' · ' + (product.category ?: 'Sin clasificar')}">Código</small><span><b th:text="${'S/ ' + #numbers.formatDecimal(product.netReferencePrice ?: product.salePrice,1,'COMMA',2,'POINT')}">S/ 0.00</b><small th:text="${product.netReferencePrice!=null?'Referencia sin IGV':'Precio general con IGV'}"></small><em th:text="${'Stock ' + product.stock.stripTrailingZeros().toPlainString()}">Stock 0</em></span></span>
+    <span class="catalog-product__select" th:text="${product.active ? 'Elegir' : 'Inactivo'}">Elegir</span>
+   </button>
+   <p class="catalog-empty" data-product-empty hidden>No hay productos que coincidan con la búsqueda.</p>
+  </div>
+ </div>
+</dialog>
+</body></html>

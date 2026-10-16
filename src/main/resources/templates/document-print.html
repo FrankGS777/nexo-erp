@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${doc.title+' '+doc.number+' - Nexo'}"></title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/css/document-print.css"><script src="/js/document-print.js" defer></script></head>
+<body>
+<nav class="print-actions"><button type="button" data-print>Imprimir / guardar PDF</button><span>A4</span></nav>
+<main class="document-sheet" th:classappend="${doc.transport?'document-sheet--transport':''}">
+  <header class="document-header">
+    <div class="issuer"><img src="/images/nexo-logo.svg" alt="Nexo"><strong th:text="${doc.company}"></strong><p th:text="${doc.companyAddress}"></p><span>example.invalid</span></div>
+    <div class="fiscal-box"><strong th:text="${'RUC '+doc.ruc}"></strong><h1 th:text="${doc.title}"></h1><b th:text="${doc.number}"></b></div>
+  </header>
+  <p class="document-notice" th:if="${doc.notice!=''}" th:text="${doc.notice}"></p>
+  <section class="party-section">
+    <div class="party-main"><dl><dt>Cliente</dt><dd class="customer-name" th:text="${doc.customer}"></dd><dt>Documento</dt><dd th:text="${doc.customerDocument}"></dd><dt>Direccion fiscal</dt><dd th:text="${doc.address ?: 'No registrada'}"></dd><dt th:if="${doc.delivery!=''}">Entrega</dt><dd th:if="${doc.delivery!=''}" th:text="${doc.delivery}"></dd></dl></div>
+    <div><dl><dt>Fecha</dt><dd th:text="${doc.date}"></dd><dt>Moneda</dt><dd th:text="${doc.currency=='PEN'?'Soles (PEN)':doc.currency}"></dd><dt th:if="${doc.payment!=''}">Pago</dt><dd th:if="${doc.payment!=''}" th:text="${doc.payment}"></dd><dt th:if="${doc.due!=''}" th:text="${doc.dueLabel}"></dt><dd th:if="${doc.due!=''}" th:text="${doc.due}"></dd><dt th:if="${doc.purchaseOrder!=''}">Orden de compra</dt><dd th:if="${doc.purchaseOrder!=''}" th:text="${doc.purchaseOrder}"></dd></dl></div>
+  </section>
+  <section class="transport-section" th:if="${doc.transport}"><h2>Datos del traslado</h2><dl><dt>Punto de partida</dt><dd th:text="${doc.departure}"></dd><dt>GRE declarada</dt><dd th:text="${doc.guide}"></dd><dt>Transportista RUC</dt><dd th:text="${doc.carrier}"></dd><dt>Placa</dt><dd th:text="${doc.plate}"></dd></dl></section>
+  <p class="reference" th:if="${doc.reference!=''}" th:text="${'Documento relacionado: '+doc.reference}"></p>
+  <section class="transport-section" th:if="${doc.transport}"><dl><th:block th:each="fact:${doc.transportFacts}"><dt th:text="${fact.key}"></dt><dd th:text="${fact.value}"></dd></th:block></dl></section>
+  <p class="reference" th:if="${!doc.transport and doc.guide!=''}" th:text="${'Guia de remision: '+doc.guide}"></p>
+  <section class="lines-section"><table class="document-lines"><thead><tr><th>Item</th><th>Codigo / descripcion</th><th>Und.</th><th class="numeric">Cantidad</th><th class="numeric" th:unless="${doc.transport}">Valor unitario<br>sin IGV</th><th class="numeric" th:unless="${doc.transport}">Valor venta<br>sin IGV</th></tr></thead><tbody><tr th:each="line:${doc.lines}"><td th:text="${line.number}"></td><td><strong th:text="${line.description}"></strong><small th:text="${line.sku}"></small></td><td th:text="${line.unit}"></td><td class="numeric" th:text="${line.quantity.stripTrailingZeros().toPlainString()}"></td><td class="numeric" th:unless="${doc.transport}" th:text="${doc.symbol+' '+#numbers.formatDecimal(line.price,1,'COMMA',2,'POINT')}"></td><td class="numeric" th:unless="${doc.transport}" th:text="${doc.symbol+' '+#numbers.formatDecimal(line.total,1,'COMMA',2,'POINT')}"></td></tr></tbody></table></section>
+  <section class="document-bottom">
+    <p class="amount-words" th:unless="${doc.transport}" th:text="${doc.words}"></p>
+    <div class="settlement"><div class="observations"><h2>Observaciones</h2><p th:text="${doc.notes!=''?doc.notes:'Sin observaciones adicionales.'}"></p><table class="installments" th:if="${!#lists.isEmpty(doc.installments)}"><thead><tr><th>Cuota</th><th>Vencimiento</th><th class="numeric">Importe</th></tr></thead><tbody><tr th:each="i:${doc.installments}"><td th:text="${i.number}"></td><td th:text="${i.date}"></td><td class="numeric" th:text="${doc.symbol+' '+#numbers.formatDecimal(i.amount,1,'COMMA',2,'POINT')}"></td></tr></tbody></table></div>
+    <dl class="document-totals" th:unless="${doc.transport}"><dt>Op. gravadas</dt><dd th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.taxable,1,'COMMA',2,'POINT')}"></dd><dt>Op. exoneradas</dt><dd th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.exempt,1,'COMMA',2,'POINT')}"></dd><dt>Op. inafectas</dt><dd th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.unaffected,1,'COMMA',2,'POINT')}"></dd><dt>Valor de venta</dt><dd th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.subtotal,1,'COMMA',2,'POINT')}"></dd><dt>IGV</dt><dd th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.tax,1,'COMMA',2,'POINT')}"></dd><dt class="grand">TOTAL</dt><dd class="grand" th:text="${doc.symbol+' '+#numbers.formatDecimal(doc.total,1,'COMMA',2,'POINT')}"></dd></dl>
+    <div class="signature" th:if="${doc.transport}"><p>Conformidad de recepcion</p><span>Nombre:</span><span>Documento:</span><span>Fecha / firma:</span></div></div>
+    <footer class="document-footer"><img th:if="${doc.qr!=''}" th:src="${doc.qr}" alt="QR de datos del comprobante"><div><p th:text="${doc.footer}"></p><p th:if="${doc.digest!=''}"><strong>Resumen de firma XML: </strong><span class="hash" th:text="${doc.digest}"></span></p><p th:text="${'Estado: '+@uiLabels.status(doc.state)}"></p></div></footer>
+  </section>
+</main></body></html>

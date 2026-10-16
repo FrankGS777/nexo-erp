@@ -1,0 +1,15 @@
+<!doctype html><html lang="es" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/page :: head('Clientes')}"></head><body class="app-page"><div class="app-shell">
+<aside th:replace="~{fragments/navigation :: sidebar('clientes')}"></aside><div class="nav-scrim" data-nav-close></div><section class="app-main"><header th:replace="~{fragments/navigation :: topbar('Clientes', ${currentUser})}"></header><main class="workspace">
+<section class="page-heading"><div><h1>Clientes</h1></div><a class="button button--primary" href="/modulos/clientes/nuevo">Nuevo cliente</a></section>
+<div th:replace="~{fragments/page :: flashes}"></div>
+<section class="panel data-panel"><div class="list-toolbar"><form class="list-search" method="get"><input type="search" name="q" th:value="${query}" placeholder="RUC, nombre, telefono o correo"><button class="button button--secondary">Buscar</button></form><span class="record-count"><b th:text="${activeCount}">0</b> activos</span></div>
+<div class="responsive-table"><table class="directory-table"><thead><tr><th>Documento</th><th>Cliente</th><th>Contacto</th><th>Ubicación</th><th>Estado</th><th><span class="visually-hidden">Acciones</span></th></tr></thead><tbody>
+<tr th:each="customer : ${customers}">
+<td class="directory-document"><small th:text="${customer.documentType == '6' ? 'RUC' : customer.documentType == '1' ? 'DNI' : 'Otro'}">RUC</small><strong th:text="${customer.documentNumber}">Documento</strong></td>
+<td class="directory-name"><strong th:text="${customer.legalName}" th:title="${customer.legalName}">Cliente</strong></td>
+<td class="directory-contact" th:title="${(customer.contactName ?: customer.email ?: '') + ' ' + (customer.phone ?: '')}"><span th:text="${customer.contactName ?: customer.email ?: '—'}">—</span><small th:if="${customer.phone}" th:text="${customer.phone}"></small></td>
+<td class="directory-address" th:title="${customer.address}"><span th:text="${customer.address ?: '—'}">—</span></td>
+<td><span class="document-state" th:classappend="${customer.active} ? ' document-state--ok' : ' document-state--muted'" th:text="${customer.active ? 'Activo' : 'Inactivo'}">Activo</span></td>
+<td class="table-actions"><a class="table-button" th:href="@{/modulos/clientes/{id}/editar(id=${customer.id})}">Editar</a><form th:action="@{/modulos/clientes/{id}/estado(id=${customer.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="icon-action" th:title="${customer.active ? 'Desactivar' : 'Activar'}" th:aria-label="${customer.active ? 'Desactivar cliente' : 'Activar cliente'}" th:text="${customer.active ? '•••' : '↺'}">•••</button></form></td></tr>
+<tr th:if="${#lists.isEmpty(customers)}"><td colspan="6" class="empty-results">No se encontraron clientes.</td></tr></tbody></table></div></section>
+</main></section></div><script src="/js/app.js" defer></script></body></html>
